@@ -1,1 +1,1 @@
-# RPA_APP
+# App de escritorio que consiste en un formulario para subir archivos (C.C y Tarjeta de propiedad), luego extrae la información necesaria y automáticamente entra a A.M (Agente Motor) y cotiza el auto con diferentes aseguradoras.
