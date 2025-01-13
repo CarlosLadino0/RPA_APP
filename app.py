@@ -2,10 +2,11 @@ import sys
 import os
 import json
 import subprocess
+import re
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox, 
                              QFileDialog, QVBoxLayout, QComboBox, QCheckBox, QScrollArea)
-from PyQt5.QtGui import QMovie
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QMovie, QIntValidator, QRegExpValidator
+from PyQt5.QtCore import Qt, QRegExp
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 from procesador import procesar_documentos
@@ -24,6 +25,7 @@ class FormularioApp(QWidget):
 
         layout_principal = QVBoxLayout()
 
+        #Cédula
         self.label_cedula = QLabel('Adjuntar Cédula (PDF O IMAGEN):')
         self.boton_cedula = QPushButton('Seleccionar archivo')
         self.boton_cedula.clicked.connect(self.seleccionar_archivo_cedula)
@@ -35,7 +37,7 @@ class FormularioApp(QWidget):
         layout_cedula.addWidget(self.boton_cedula)
         layout_cedula.addWidget(self.ruta_cedula)
 
-
+        #Tarjeta de propiedad
         self.label_tarjeta = QLabel('Adjuntar tarjeta de propiedad (PDF O IMAGEN):')
         self.boton_tarjeta = QPushButton('Seleccionar archivo')
         self.boton_tarjeta.clicked.connect(self.seleccionar_archivo_tarjeta)
@@ -47,7 +49,7 @@ class FormularioApp(QWidget):
         layout_tarjeta.addWidget(self.boton_tarjeta)
         layout_tarjeta.addWidget(self.ruta_tarjeta)
 
-
+        #Zona de circulación
         self.label_departamento = QLabel('Zona de circulación:')
         self.combo_departamento = QComboBox()
         self.combo_departamento.addItem('Seleccione un departamento')
@@ -61,7 +63,7 @@ class FormularioApp(QWidget):
         layout_zona.addWidget(self.label_ciudad)
         layout_zona.addWidget(self.combo_ciudad)
 
-
+        #0KM
         self.label_nuevo = QLabel('¿Nuevo? (0KM):')
         self.combo_nuevo = QComboBox()
         self.combo_nuevo.addItem('Seleccione una opción')
@@ -71,7 +73,7 @@ class FormularioApp(QWidget):
         layout_nuevo.addWidget(self.label_nuevo)
         layout_nuevo.addWidget(self.combo_nuevo)
 
-
+        #Género del propietario
         self.label_genero = QLabel('Genero del propietario:')
         self.combo_genero = QComboBox()
         self.combo_genero.addItem('Seleccione un genero')
@@ -80,20 +82,26 @@ class FormularioApp(QWidget):
         layout_genero = QVBoxLayout()
         layout_genero.addWidget(self.label_genero)
         layout_genero.addWidget(self.combo_genero)
-
-
+    
+        #Oneroso
         self.checkbox_oneroso = QCheckBox("¿Beneficiario Oneroso?", self)
         self.checkbox_oneroso.stateChanged.connect(self.toggle_oneroso)
         self.combo_oneroso = QComboBox()
         self.combo_oneroso.addItem('Seleccione una opción')
         self.combo_oneroso.hide()
+        layout_oneroso = QVBoxLayout()
+        layout_oneroso.addWidget(self.checkbox_oneroso)
+        layout_oneroso.addWidget(self.combo_oneroso)
+        self.cargar_oneroso()
 
-
-        self.combo_departamento.setFocusPolicy(Qt.StrongFocus)
-        self.combo_ciudad.setFocusPolicy(Qt.StrongFocus)
-        self.combo_nuevo.setFocusPolicy(Qt.StrongFocus)
-        self.combo_genero.setFocusPolicy(Qt.StrongFocus)
-        self.combo_oneroso.setFocusPolicy(Qt.StrongFocus)
+        #Correo electrónico
+        self.label_correo = QLabel('Correo electrónico:')
+        self.campo_correo = QLineEdit()
+        self.campo_correo.setPlaceholderText('example@example.com')
+        layout_correo = QVBoxLayout()
+        layout_correo.addWidget(self.label_correo)
+        layout_correo.addWidget(self.campo_correo)
+        self.campo_correo.textChanged.connect(self.validar_correo)
 
 
         layout_oneroso = QVBoxLayout()
@@ -115,6 +123,7 @@ class FormularioApp(QWidget):
         layout_principal.addLayout(layout_zona)
         layout_principal.addLayout(layout_nuevo)
         layout_principal.addLayout(layout_genero)
+        layout_principal.addLayout(layout_correo)
         layout_principal.addLayout(layout_oneroso)
         layout_principal.addWidget(self.boton_procesar)
         layout_principal.addWidget(self.label_estado)
@@ -190,6 +199,13 @@ class FormularioApp(QWidget):
             self.combo_oneroso.clear()
             self.combo_oneroso.addItem('Seleccione una opción')
 
+    def validar_correo(self):
+        texto = self.campo_correo.text()
+        patron = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if re.match(patron, texto):
+            self.campo_correo.setStyleSheet("border: 2px solid green;")
+        else:
+            self.campo_correo.setStyleSheet("border: 2px solid red;")
 
     def seleccionar_archivo_cedula(self):
         ruta, _ = QFileDialog.getOpenFileName(self, 'Seleccionar Cédula', '', 'Archivos (*.pdf *.png *.jpg *.jpeg)')
@@ -219,7 +235,7 @@ class FormularioApp(QWidget):
 
     def guardar_datos_en_excel(self, datos):
         ruta_datos_excel = 'datos/datos_extraidos.xlsx'
-        encabezados = ['NUM_CEDULA','NOMBRES', 'APELLIDOS', 'FECHA_NACIMIENTO', 'FECHA_LUGAR_EXPEDICION', 
+        encabezados = ['NUM_CEDULA','NOMBRES', 'APELLIDOS', 'FECHA_NACIMIENTO', 'FECHA_LUGAR_EXPEDICION', 'CORREO',
                        'CLASE_VEHICULO', 'PLACA', 'MODELO', 'SERVICIO', 'MARCA', 'LÍNEA', 'CILINDRAJE', 'VEHICULO_NUEVO(0KM)', 'DEP_CIRCULACION', 
                        'CIUDAD_CIRCULACIÓN', 'GÉNERO', 'B.ONEROSO']
 
@@ -260,9 +276,10 @@ class FormularioApp(QWidget):
         zona_departamento = zona.get('departamento', 'N/A')
         zona_ciudad = zona.get('ciudad', 'N/A')
         genero = datos.get('genero', 'N/A')
+        correo = datos.get('correo', 'N/A')
         oneroso = datos.get('oneroso', 'N/A')
 
-        ws.append([num_cedula, nombres, apellidos, fecha_nacimiento, fecha_lugar_expedicion, clase_vehiculo, 
+        ws.append([num_cedula, nombres, apellidos, fecha_nacimiento, fecha_lugar_expedicion, correo, clase_vehiculo, 
                    placa, modelo, servicio, marca, linea, cilindraje, nuevo_vehiculo, zona_departamento, zona_ciudad, genero, oneroso])
 
         thin_border = Border(left=Side(style='thin'),
@@ -308,6 +325,13 @@ class FormularioApp(QWidget):
         ciudad = self.combo_ciudad.currentText()
         nuevo_vehiculo = self.combo_nuevo.currentText()
         genero = self.combo_genero.currentText()
+        correo = self.campo_correo.text()
+
+        texto = self.campo_correo.text()
+        patron = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(patron, texto):
+            QMessageBox.warning(self, "Error", "Por favor, ingrese un correo válido.")
+            return
 
         if self.checkbox_oneroso.isChecked() and self.combo_oneroso.currentIndex() == 0:
             self.mostrar_alerta('Error', 'Debes seleccionar una opción en el campo de Beneficiario Oneroso.', "Warning")
@@ -337,6 +361,11 @@ class FormularioApp(QWidget):
 
         if not genero or genero == 'Seleccione el genero del propietario':
             self.mostrar_alerta('Error', 'Por favor, seleccione el genero del propietario.', "Warning")
+            return
+
+        if not correo or correo == 'Escribe un correo electrónico':
+            self.mostrar_alerta('Error', 'Por favor, escriba un correo electrónico.', "Warning")
+            return
 
         self.label_estado.setText("Procesando archivos, por favor espere...")
         self.label_estado.show()
@@ -350,6 +379,7 @@ class FormularioApp(QWidget):
                 'ciudad': ciudad
             }
             datos_extraidos['genero'] = genero
+            datos_extraidos['correo'] = correo
             datos_extraidos['oneroso'] = oneroso
 
             if datos_extraidos:
@@ -371,6 +401,7 @@ class FormularioApp(QWidget):
                 self.combo_ciudad.clear()
                 self.combo_ciudad.addItem('Seleccione una ciudad')
                 self.combo_genero.setCurrentIndex(0)
+                self.campo_correo.clear()
                 self.combo_oneroso.setCurrentIndex(0)
                 self.checkbox_oneroso.setChecked(False)
 

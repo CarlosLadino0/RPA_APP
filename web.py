@@ -110,6 +110,7 @@ def agente_motor():
             oneroso = datos["oneroso"]
             marca = datos["tarjeta"]["marca"]
             linea = datos["tarjeta"]["linea"]
+            correo = datos["correo"]
 
             fecha_nacimiento = datetime.strptime(fecha_nacimiento_raw, "%d-%b-%Y").strftime("%d-%m-%Y")
             print(f"Fecha de nacimiento convertida: {fecha_nacimiento}")
@@ -345,6 +346,12 @@ def agente_motor():
             campo_fecha_nacimiento.send_keys(fecha_nacimiento)
             print(f"Se ingresó la fecha de nacimiento correctamente: {fecha_nacimiento}")
 
+            campo_correo = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "email"))
+            )
+            campo_correo.send_keys(correo)
+            time.sleep(1)
+
             if genero == "MASCULINO":
                 boton_m = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.XPATH, "//label[normalize-space(text())='Masculino']"))
@@ -385,6 +392,17 @@ def agente_motor():
             boton_resumen.click()
         except Exception as e:
             print(f"Error al ingresar datos: {e}")
+
+        '''try: 
+            boton_confirmar_cotizar = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, ".k-button-solid-base"))
+            )
+            time.sleep(1)
+            boton_confirmar_cotizar.click()
+            print(f"Botón cancelar presionado")
+        except Exception as e:
+            print(f"No se pudo confirmar la cotización")
+            '''
 
     finally:
         time.sleep(6)
