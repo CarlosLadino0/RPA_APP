@@ -1,0 +1,82 @@
+QMainWindow {
+    background-color: #f4f4f9;
+}
+
+QMainWindow::title {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 18px;
+}
+
+QLabel {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+QLineEdit {
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px;
+    background-color: white;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+QLineEdit:focus {
+    border-color: #4CAF50;
+}
+
+QPushButton {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+QPushButton:hover {
+    background-color: #45a049;
+}
+
+QPushButton:pressed {
+    background-color: #388e3c;
+}
+
+QComboBox {
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px;
+    background-color: white;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+QGroupBox {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    background-color: #e1e1e1;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+QMessageBox {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+QVBoxLayout {
+    padding: 10px;
+}
+
+QFileDialog {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}

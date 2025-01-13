@@ -1,0 +1,7 @@
+# Ignorar la carpeta del entorno virtual
+entorno_virtual/
+
+# Ignorar otras carpetas o archivos innecesarios
+__pycache__/
+*.pyc
+.DS_Store
