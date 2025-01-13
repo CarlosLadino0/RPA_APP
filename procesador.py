@@ -102,7 +102,6 @@ def extraer_nombre_apellido(texto):
 
     apellidos = " ".join(apellidos.split())
     nombres = " ".join(nombres.split())
-
     return apellidos, nombres, num_cedula
 
 def extraer_datos_trasera(texto):
@@ -117,7 +116,6 @@ def extraer_datos_trasera(texto):
     match_fecha_lugar = re.search(r'(\d{1,2}-[A-Z]{3}-\d{4}\s+[A-Z\s]+)\s+FECHA Y LUGAR DE EXPEDICI[ÓO]N', texto)
     if match_fecha_lugar:
         fecha_lugar_expedicion = match_fecha_lugar.group(1).strip()
-
     return fecha_nacimiento, fecha_lugar_expedicion
 
 def extraer_datos_tarjeta_dinamicos(texto):
@@ -163,7 +161,6 @@ def extraer_datos_tarjeta_dinamicos(texto):
         match_linea = re.search(rf'\b{datos_tarjeta["marca"]}\s+(.*?)\s+\b{datos_tarjeta["modelo"]}\b', texto)
         if match_linea:
             datos_tarjeta['linea'] = match_linea.group(1).strip()
-            
     return datos_tarjeta
 
 def procesar_imagenes_en_paralelo(image_paths):
@@ -175,10 +172,8 @@ def procesar_imagenes_en_paralelo(image_paths):
 def procesar_documentos(cedula_path, tarjeta_path):
     texto_cedula = extraer_texto_desde_pdf_o_imagen(cedula_path)
     texto_tarjeta = extraer_texto_desde_pdf_o_imagen(tarjeta_path)
-
     apellidos, nombres, num_cedula = extraer_nombre_apellido(texto_cedula)
     fecha_nacimiento, fecha_lugar_expedicion = extraer_datos_trasera(texto_cedula)
-
     datos_tarjeta = extraer_datos_tarjeta_dinamicos(texto_tarjeta)
 
     datos_documentos = {
@@ -193,5 +188,4 @@ def procesar_documentos(cedula_path, tarjeta_path):
         'texto_tarjeta': texto_tarjeta,
         'texto_cedula': texto_cedula
     }
-
     return datos_documentos

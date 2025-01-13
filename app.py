@@ -99,7 +99,6 @@ class FormularioApp(QWidget):
         layout_oneroso = QVBoxLayout()
         layout_oneroso.addWidget(self.checkbox_oneroso)
         layout_oneroso.addWidget(self.combo_oneroso)
-
         self.cargar_oneroso()
 
 
@@ -215,7 +214,6 @@ class FormularioApp(QWidget):
 
             for ciudad in ciudades:
                 self.combo_ciudad.addItem(ciudad)
-
         else:
             self.label_departamento.setText('Zona de circulación:')
 
@@ -248,7 +246,7 @@ class FormularioApp(QWidget):
         apellidos = cedula.get('apellidos', 'N/A')
         fecha_nacimiento = cedula.get('fecha_nacimiento', 'N/A')
         fecha_lugar_expedicion = cedula.get('fecha_lugar_expedicion', 'N/A')
-
+        
         placa = tarjeta.get('placa', 'N/A')
         clase_vehiculo = tarjeta.get('clase_vehiculo', 'N/A')
         modelo = tarjeta.get('modelo', 'N/A')

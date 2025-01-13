@@ -3,12 +3,17 @@ import os
 import re
 import json
 
-carpeta = "guia_fasecolda" 
+carpeta = "guia_fasecolda"
 ruta_json = "datos/datos_extraidos.json"
-with open(ruta_json, "r", encoding="utf-8") as archivo_json:
-    datos_json = json.load(archivo_json)
 
-def filtrar_excel(carpeta, datos_json):
+def filtrar_excel(carpeta=carpeta, ruta_json=ruta_json):
+
+    carpeta = "guia_fasecolda" 
+    ruta_json = "datos/datos_extraidos.json"
+
+    with open(ruta_json, "r", encoding="utf-8") as archivo_json:
+        datos_json = json.load(archivo_json)
+
     archivo_excel = next((f for f in os.listdir(carpeta) if f.endswith('.xlsx')), None)
     if not archivo_excel:
         raise FileNotFoundError(f"No se encontró ningún archivo .xlsx en la carpeta {carpeta}")
@@ -46,7 +51,7 @@ def filtrar_excel(carpeta, datos_json):
     return codigo_fasecolda
 
 try:
-    codigo_fasecolda = filtrar_excel(carpeta, datos_json)
+    codigo_fasecolda = filtrar_excel()
     print("Codigo fasecolda encontrado:", codigo_fasecolda)
 except Exception as e:
     print("Error:", e)

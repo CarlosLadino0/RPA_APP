@@ -3,7 +3,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from validar_fasecolda import filtrar_excel
 from datetime import datetime
 import unicodedata
 import time
@@ -25,7 +24,6 @@ def borrar_y_escribir(campo, texto_a_escribir):
 
 def agente_motor():
     driver = webdriver.Chrome()
-
     try:
         ruta_json = "datos/datos_extraidos.json"
         if not os.path.exists(ruta_json):
@@ -36,7 +34,6 @@ def agente_motor():
 
         clase_vehiculo = normalizar_texto(datos["tarjeta"]["clase_vehiculo"])
         servicio = normalizar_texto(datos["tarjeta"]["servicio"])
-
         url = "https://crm.agentemotor.com/avs/login?tenant=corredoresasociados.co.agentemotor.com"
         driver.get(url)
         driver.maximize_window()
@@ -148,7 +145,7 @@ def agente_motor():
                     EC.element_to_be_clickable((By.ID, "in_agency"))
                 )
                 boton_si.click()
-                print("Se seleccionó vehículo nuevo")
+                print("Se seleccionó 'Vehículo nuevo'")
 
                 campo_modelo = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.ID, "model"))
@@ -176,13 +173,12 @@ def agente_motor():
                 print(f"Se ingresó la línea del vehículo: {linea}")
 
             elif nuevo_vehiculo == "NO":
-                print("No se pulsará ningún botón ya que no es vehículo nuevo")
+                print("No se pulsará 'Vehículo nuevo'")
             else:
                 print(f"Valor inesperado para 'nuevo_vehiculo': {nuevo_vehiculo}")
 
         except Exception as e:
             print(f"No se pudieron llenar los campos placa - {placa}. Y cédula - {num_cedula}. {e}")
-
         
         try: 
             wait = WebDriverWait(driver, 5)
@@ -194,10 +190,11 @@ def agente_motor():
             print(f"Error al pulsar el botón siguiente: {e}")
 
         try:
-            mensaje_no_encontrado = WebDriverWait(driver, 10).until(
+            mensaje_no_encontrado = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.XPATH, "//h4[text()='Vehículo no encontrado!!']"))
             )
             print("Vehículo no encontrado")
+
             campo_modelo = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "model"))
             )
@@ -237,31 +234,52 @@ def agente_motor():
             if cantidad_cartas == 1:
                 print("Hay una sola carta. ")
             elif cantidad_cartas > 1:
-                print(f"Se encontraron {cantidad_cartas} cartas. ...")
+                print(f"Se encontraron {cantidad_cartas} cartas.")
+                print(f"Buscando código Fasecolda correspondiente...")
 
-        except: 
-            print("Vehículo encontrado.")
+            from validar_fasecolda import filtrar_excel
+            codigo_fasecolda = filtrar_excel()
 
-        try:
-            wait = WebDriverWait(driver, 15)
-            modelo_pantalla_elemento = wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'h6[data-testid="identification-Modelo"]'))
-            )
-            modelo_pantalla = modelo_pantalla_elemento.text.split(":")[-1].strip()
-            print(f"Modelo en pantalla: {modelo_pantalla}")
-            print(f"Modelo esperado: {modelo_esperado}")
+            carta_encontrada = False
+            for carta in cartas:
+                codigo_elemento = carta.find_element(By.CSS_SELECTOR, 'h6[data-testid="identification-Fasecolda"]')
+                codigo_en_carta = codigo_elemento.text.split(":")[-1].strip()
 
-            if modelo_pantalla == modelo_esperado:
-                print(f"El modelo coincide. Se procede a continuar con el proceso.")
+                codigo_en_carta_normalizado = codigo_en_carta.lstrip('0')
 
-                boton_es_mi_vehiculo = wait.until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-testid="button-is-my-vehicle"]'))
+                if codigo_en_carta_normalizado == str(codigo_fasecolda):
+                    boton = carta.find_element(By.CSS_SELECTOR, 'button[data-testid="button-is-my-vehicle"]')
+                    boton.click()
+                    print("Se seleccionó la carta correcta.")
+                    carta_encontrada = True
+                    break
+
+            if not carta_encontrada:
+                print(f"No se encontró una carta con el código Fasecolda {codigo_fasecolda}.")
+
+        except Exception as e: 
+            print(f"Error durante el proceso: {e}")
+
+            try:
+                wait = WebDriverWait(driver, 15)
+                modelo_pantalla_elemento = wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, 'h6[data-testid="identification-Modelo"]'))
                 )
-                boton_es_mi_vehiculo.click()
-            else:
-                print(f"El modelo no coincide.")
-        except Exception as e:
-            print(f"Error durante la verificación del modelo: {e}")
+                modelo_pantalla = modelo_pantalla_elemento.text.split(":")[-1].strip()
+                print(f"Modelo en pantalla: {modelo_pantalla}")
+                print(f"Modelo esperado: {modelo_esperado}")
+
+                if modelo_pantalla == modelo_esperado:
+                    print(f"El modelo coincide. Se procede a continuar con el proceso.")
+
+                    boton_es_mi_vehiculo = wait.until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-testid="button-is-my-vehicle"]'))
+                    )
+                    boton_es_mi_vehiculo.click()
+                else:
+                    print(f"El modelo no coincide.")
+            except Exception as e:
+                print(f"Error durante la verificación del modelo: {e}")
 
         try: 
             campo_ciudad = WebDriverWait(driver, 10).until(
