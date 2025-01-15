@@ -49,6 +49,21 @@ class FormularioApp(QWidget):
         layout_tarjeta.addWidget(self.boton_tarjeta)
         layout_tarjeta.addWidget(self.ruta_tarjeta)
 
+        #Vehículo nuevo
+        self.checkbox_nuevo = QCheckBox("¿Vehículo nuevo (0KM)?")
+        self.checkbox_nuevo.stateChanged.connect(self.toggle_nuevo)
+        self.boton_factura = QPushButton('Subir factura (PDF)')
+        self.boton_factura.clicked.connect(self.seleccionar_factura)
+        self.boton_factura.hide()
+        self.ruta_factura = QLineEdit()
+        self.ruta_factura.setPlaceholderText('No se ha seleccionado ninguna factura')
+        self.ruta_factura.setReadOnly(True)
+        self.ruta_factura.hide()
+        layout_nuevo = QVBoxLayout()
+        layout_nuevo.addWidget(self.checkbox_nuevo)
+        layout_nuevo.addWidget(self.boton_factura)
+        layout_nuevo.addWidget(self.ruta_factura)
+
         #Zona de circulación
         self.label_departamento = QLabel('Zona de circulación:')
         self.combo_departamento = QComboBox()
@@ -62,16 +77,6 @@ class FormularioApp(QWidget):
         layout_zona.addWidget(self.combo_departamento)
         layout_zona.addWidget(self.label_ciudad)
         layout_zona.addWidget(self.combo_ciudad)
-
-        #0KM
-        self.label_nuevo = QLabel('¿Nuevo? (0KM):')
-        self.combo_nuevo = QComboBox()
-        self.combo_nuevo.addItem('Seleccione una opción')
-        self.combo_nuevo.addItem('SI')
-        self.combo_nuevo.addItem('NO')
-        layout_nuevo = QVBoxLayout()
-        layout_nuevo.addWidget(self.label_nuevo)
-        layout_nuevo.addWidget(self.combo_nuevo)
 
         #Género del propietario
         self.label_genero = QLabel('Genero del propietario:')
@@ -103,13 +108,7 @@ class FormularioApp(QWidget):
         layout_correo.addWidget(self.campo_correo)
         self.campo_correo.textChanged.connect(self.validar_correo)
 
-
-        layout_oneroso = QVBoxLayout()
-        layout_oneroso.addWidget(self.checkbox_oneroso)
-        layout_oneroso.addWidget(self.combo_oneroso)
-        self.cargar_oneroso()
-
-
+        # Boton procesar
         self.boton_procesar = QPushButton('Procesar')
         self.boton_procesar.clicked.connect(self.procesar_formulario)
 
@@ -121,13 +120,13 @@ class FormularioApp(QWidget):
         layout_principal.addLayout(layout_cedula)
         layout_principal.addLayout(layout_tarjeta)
         layout_principal.addLayout(layout_zona)
-        layout_principal.addLayout(layout_nuevo)
         layout_principal.addLayout(layout_genero)
         layout_principal.addLayout(layout_correo)
+        layout_principal.addLayout(layout_nuevo)
         layout_principal.addLayout(layout_oneroso)
         layout_principal.addWidget(self.boton_procesar)
         layout_principal.addWidget(self.label_estado)
-        
+
 
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
@@ -156,7 +155,7 @@ class FormularioApp(QWidget):
 
     def cargar_estilos(self):
         ruta_estilos = os.path.join(os.path.dirname(__file__), 'estilos', 'styles.css')
-        
+
         with open(ruta_estilos, 'r') as file:
             self.setStyleSheet(file.read())
 
@@ -182,13 +181,28 @@ class FormularioApp(QWidget):
         except json.JSONDecodeError:
             self.mostrar_alerta('Error', 'Error al leer el archivo de onerosos')
             return []
-        
+
     def cargar_opciones_oneroso(self):
         bancos = self.cargar_oneroso()  
         self.combo_oneroso.clear()
         self.combo_oneroso.addItem('Seleccione una opción')  
         for banco in bancos:
             self.combo_oneroso.addItem(banco)
+
+    def toggle_nuevo(self, state):
+        if state == Qt.Checked:
+            self.boton_factura.show()
+            self.ruta_factura.show()
+        else:
+            self.boton_factura.hide()
+            self.ruta_factura.hide()
+            self.ruta_factura.clear() 
+
+    def seleccionar_factura(self):
+        ruta, _ = QFileDialog.getOpenFileName(self, 'Seleccionar Factura', '', 'Archivos (*.pdf)')
+        if ruta:
+            self.ruta_factura.setText(ruta)
+ 
 
     def toggle_oneroso(self, state):
         if state == Qt.Checked:
@@ -262,7 +276,7 @@ class FormularioApp(QWidget):
         apellidos = cedula.get('apellidos', 'N/A')
         fecha_nacimiento = cedula.get('fecha_nacimiento', 'N/A')
         fecha_lugar_expedicion = cedula.get('fecha_lugar_expedicion', 'N/A')
-        
+
         placa = tarjeta.get('placa', 'N/A')
         clase_vehiculo = tarjeta.get('clase_vehiculo', 'N/A')
         modelo = tarjeta.get('modelo', 'N/A')
@@ -300,7 +314,6 @@ class FormularioApp(QWidget):
             ws.column_dimensions[column_letter].width = max_length + 2
 
         wb.save(ruta_datos_excel)
-
         print("DATOS GUARDADOS EN EXCEL CORRECTAMENTE")
 
     def mostrar_alerta(self, titulo, mensaje, tipo="Warning"):
@@ -323,7 +336,6 @@ class FormularioApp(QWidget):
         tarjeta = self.ruta_tarjeta.text()
         departamento = self.combo_departamento.currentText()
         ciudad = self.combo_ciudad.currentText()
-        nuevo_vehiculo = self.combo_nuevo.currentText()
         genero = self.combo_genero.currentText()
         correo = self.campo_correo.text()
 
@@ -338,6 +350,13 @@ class FormularioApp(QWidget):
             return
 
         oneroso = self.combo_oneroso.currentText() if self.checkbox_oneroso.isChecked() else "NO"
+        nuevo_vehiculo = "NO"
+
+        if self.checkbox_nuevo.isChecked():
+            nuevo_vehiculo = self.ruta_factura.text()
+            if not nuevo_vehiculo:
+                self.mostrar_alerta('Error', 'Por favor, suba el archivo de la factura del vehículo', "Warning")
+                return
 
         if not cedula:
             self.mostrar_alerta('Error', 'Por favor, adjunte el archivo de cédula.', "Warning")
@@ -353,10 +372,6 @@ class FormularioApp(QWidget):
 
         if not ciudad or ciudad == 'Seleccione una ciudad':
             self.mostrar_alerta('Error', 'Por favor, seleccione una ciudad.', "Warning")  
-            return
-
-        if not nuevo_vehiculo or nuevo_vehiculo == 'Seleccione una opción':
-            self.mostrar_alerta('Error', 'Por favor, indique si el vehículo es nuevo (0KM).', "Warning")
             return
 
         if not genero or genero == 'Seleccione el genero del propietario':
@@ -397,7 +412,8 @@ class FormularioApp(QWidget):
                 self.ruta_cedula.clear()
                 self.ruta_tarjeta.clear()
                 self.combo_departamento.setCurrentIndex(0)
-                self.combo_nuevo.setCurrentIndex(0)
+                self.ruta_factura.clear()
+                self.checkbox_nuevo.setChecked(False)
                 self.combo_ciudad.clear()
                 self.combo_ciudad.addItem('Seleccione una ciudad')
                 self.combo_genero.setCurrentIndex(0)

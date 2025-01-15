@@ -180,7 +180,7 @@ def agente_motor():
 
         except Exception as e:
             print(f"No se pudieron llenar los campos placa - {placa}. Y cédula - {num_cedula}. {e}")
-        
+
         try: 
             wait = WebDriverWait(driver, 5)
             boton_siguiente2 = wait.until(
@@ -220,7 +220,7 @@ def agente_motor():
             campo_linea.send_keys(linea)
             campo_linea.send_keys(Keys.ENTER)
             print(f"Se ingresó la línea del vehículo: {linea}")
-            
+
             boton_siguiente2 = wait.until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-testid="button-stepper-next"]'))
                 )
@@ -254,10 +254,8 @@ def agente_motor():
                     print("Se seleccionó la carta correcta.")
                     carta_encontrada = True
                     break
-
             if not carta_encontrada:
                 print(f"No se encontró una carta con el código Fasecolda {codigo_fasecolda}.")
-
         except Exception as e: 
             print(f"Error durante el proceso: {e}")
 
@@ -324,7 +322,7 @@ def agente_motor():
             boton_siguiente3.click()
         except Exception as e:
             print(f"Error al seleccionar el tipo de placa")
-    
+
         try:
             campo_nombre = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "first_name"))
@@ -403,7 +401,6 @@ def agente_motor():
         except Exception as e:
             print(f"No se pudo confirmar la cotización")
             '''
-
     finally:
         time.sleep(6)
         driver.quit()
