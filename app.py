@@ -5,7 +5,7 @@ import subprocess
 import re
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox, 
                              QFileDialog, QVBoxLayout, QComboBox, QCheckBox, QScrollArea)
-from PyQt5.QtGui import QMovie, QIntValidator, QRegExpValidator
+from PyQt5.QtGui import QMovie, QIntValidator, QRegExpValidator, QPixmap
 from PyQt5.QtCore import Qt, QRegExp
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
@@ -18,12 +18,18 @@ class FormularioApp(QWidget):
 
     def initUI(self):
         self.setWindowTitle('COTIZADOR AUTOMÁTICO A.G')
-        self.setGeometry(100, 100, 400, 600)
+        self.setGeometry(100, 100, 750, 600)
         print("App abierta correctamente")
 
         self.cargar_estilos()
 
         layout_principal = QVBoxLayout()
+
+        self.logo = QLabel(self)
+        pixmap = QPixmap("recursos/LOGO.png")
+        self.logo.setPixmap(pixmap)
+        self.logo.setAlignment(Qt.AlignCenter)
+        layout_principal.addWidget(self.logo)
 
         #Cédula
         self.label_cedula = QLabel('Adjuntar Cédula (PDF O IMAGEN):')
