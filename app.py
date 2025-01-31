@@ -4,9 +4,9 @@ import json
 import subprocess
 import re
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox, 
-                             QFileDialog, QVBoxLayout, QComboBox, QCheckBox, QScrollArea)
-from PyQt5.QtGui import QMovie, QIntValidator, QRegExpValidator, QPixmap
-from PyQt5.QtCore import Qt, QRegExp
+                             QFileDialog, QVBoxLayout, QComboBox, QCheckBox, QScrollArea, QMainWindow)
+from PyQt5.QtGui import QMovie, QIntValidator, QRegExpValidator, QPixmap, QMovie
+from PyQt5.QtCore import Qt, QRegExp, QTimer
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 from procesador import procesar_documentos
@@ -18,13 +18,13 @@ class FormularioApp(QWidget):
 
     def initUI(self):
         self.setWindowTitle('COTIZADOR AUTOMÁTICO A.G')
-        self.setGeometry(100, 100, 750, 600)
+        self.setGeometry(50, 50, 765, 600)
         print("App abierta correctamente")
 
         self.cargar_estilos()
-
         layout_principal = QVBoxLayout()
 
+        #Logo
         self.logo = QLabel(self)
         pixmap = QPixmap("recursos/LOGO.png")
         self.logo.setPixmap(pixmap)
@@ -93,7 +93,7 @@ class FormularioApp(QWidget):
         layout_genero = QVBoxLayout()
         layout_genero.addWidget(self.label_genero)
         layout_genero.addWidget(self.combo_genero)
-    
+
         #Oneroso
         self.checkbox_oneroso = QCheckBox("¿Beneficiario Oneroso?", self)
         self.checkbox_oneroso.stateChanged.connect(self.toggle_oneroso)
@@ -132,7 +132,6 @@ class FormularioApp(QWidget):
         layout_principal.addLayout(layout_oneroso)
         layout_principal.addWidget(self.boton_procesar)
         layout_principal.addWidget(self.label_estado)
-
 
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
@@ -208,8 +207,6 @@ class FormularioApp(QWidget):
         ruta, _ = QFileDialog.getOpenFileName(self, 'Seleccionar Factura', '', 'Archivos (*.pdf)')
         if ruta:
             self.ruta_factura.setText(ruta)
- 
-
     def toggle_oneroso(self, state):
         if state == Qt.Checked:
             self.combo_oneroso.show()
@@ -218,7 +215,6 @@ class FormularioApp(QWidget):
             self.combo_oneroso.hide()
             self.combo_oneroso.clear()
             self.combo_oneroso.addItem('Seleccione una opción')
-
     def validar_correo(self):
         texto = self.campo_correo.text()
         patron = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -391,7 +387,6 @@ class FormularioApp(QWidget):
         self.label_estado.setText("Procesando archivos, por favor espere...")
         self.label_estado.show()
         QApplication.processEvents()
-
         try:
             datos_extraidos = procesar_documentos(cedula, tarjeta)
             datos_extraidos['nuevo_vehiculo'] = nuevo_vehiculo
@@ -412,7 +407,6 @@ class FormularioApp(QWidget):
                     json.dump(datos_extraidos, archivo_json, ensure_ascii=False, indent=4)
 
                 self.guardar_datos_en_excel(datos_extraidos)
-
                 self.mostrar_alerta('Éxito', 'Los datos se han procesado y guardado correctamente.', "Information")
 
                 self.ruta_cedula.clear()
@@ -438,6 +432,7 @@ class FormularioApp(QWidget):
             self.label_estado.hide()
 
 if __name__ == "__main__":
+    import sys
     app = QApplication(sys.argv)
     formulario = FormularioApp()
     formulario.show()

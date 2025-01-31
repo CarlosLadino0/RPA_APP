@@ -8,6 +8,8 @@ import unicodedata
 import time
 import json
 import os
+import random
+from pywinauto.keyboard import send_keys
 
 def normalizar_texto(texto):
     return ''.join(
@@ -28,24 +30,50 @@ def agente_motor():
         ruta_json = "datos/datos_extraidos.json"
         if not os.path.exists(ruta_json):
             raise FileNotFoundError(f"No se encontraron los datos extraídos en {ruta_json}")
-
         with open(ruta_json, "r", encoding="utf-8") as archivo_json:
             datos = json.load(archivo_json)
 
-        clase_vehiculo = normalizar_texto(datos["tarjeta"]["clase_vehiculo"])
-        servicio = normalizar_texto(datos["tarjeta"]["servicio"])
+        clase_vehiculo = normalizar_texto(datos["datos_tarjeta"]["clase_vehiculo"])
+        servicio = normalizar_texto(datos["datos_tarjeta"]["servicio"])
         url = "https://crm.agentemotor.com/avs/login?tenant=corredoresasociados.co.agentemotor.com"
         driver.get(url)
         driver.maximize_window()
-        time.sleep(2)
+        driver.set_page_load_timeout(20)
+        time.sleep(5)
 
         usuario = "practicante@correseguros.co"
-        campo_usuario = driver.find_element(By.NAME, "login")
+        campo_usuario = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "login"))
+            )
         campo_usuario.send_keys(usuario)
 
+        time.sleep(1)
+
+        '''
+        for char in usuario:
+            campo_usuario.send_keys(char)
+            time.sleep(random.uniform(0.1, 0.3))
+        '''        
+
         contrasena = "Carlos2024*"
-        campo_contrasena = driver.find_element(By.NAME, "password")
+        campo_contrasena = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "password"))
+        )
         campo_contrasena.send_keys(contrasena)
+
+        '''
+        for char in contrasena:
+            campo_contrasena.send_keys(char)
+            time.sleep(random.uniform(0.1, 0.3))
+        '''
+
+        time.sleep(0.5)
+        campo_contrasena.send_keys(Keys.TAB)
+        time.sleep(0.5)     
+
+        driver.switch_to.active_element.send_keys(Keys.TAB)
+        time.sleep(0.5)
+        driver.switch_to.active_element.send_keys(Keys.ENTER)
 
         boton_login = driver.find_element(By.XPATH, "//button[@type='submit']")
         boton_login.click()
@@ -76,7 +104,7 @@ def agente_motor():
             },
             "CAMIONETA": {
                 "PARTICULAR": "Particulares",
-                "PÚBLICO": "Particulares",
+                "PÚBLICO": "Públicos",
             },
             "MICROBUS": {
                 "PÚBLICO": "Públicos",
@@ -86,11 +114,9 @@ def agente_motor():
         opciones_botones = {
             normalizar_texto(k): {normalizar_texto(sk): sv for sk, sv in v.items()} for k, v in opciones_botones.items()
             }
-
         if clase_vehiculo not in opciones_botones:
             print(f"No se maneja la clase de vehículo: {clase_vehiculo}")
             return
-
         if servicio not in opciones_botones[clase_vehiculo]:
             print(f"No se maneja el servicio: {servicio} para {clase_vehiculo}")
             return
@@ -98,18 +124,18 @@ def agente_motor():
         boton = opciones_botones[clase_vehiculo][servicio]
 
         try:
-            num_cedula = datos["cedula"]["num_cedula"]
-            placa = datos["tarjeta"]["placa"]
+            num_cedula = datos["datos_cedula"]["num_cedula"]
+            placa = datos["datos_tarjeta"]["placa"]
             nuevo_vehiculo = datos["nuevo_vehiculo"].strip().upper()
-            modelo_esperado = datos["tarjeta"]["modelo"]
+            modelo_esperado = datos["datos_tarjeta"]["modelo"]
             ciudad_circulacion = datos["zona_circulacion"]["ciudad"]
-            nombres = datos["cedula"]["nombres"]
-            apellidos = datos["cedula"]["apellidos"]
-            fecha_nacimiento_raw = datos["cedula"]["fecha_nacimiento"]
+            nombres = datos["datos_cedula"]["nombres"]
+            apellidos = datos["datos_cedula"]["apellidos"]
+            fecha_nacimiento_raw = datos["datos_cedula"]["fecha_nacimiento"]
             genero = datos["genero"]
             oneroso = datos["oneroso"]
-            marca = datos["tarjeta"]["marca"]
-            linea = datos["tarjeta"]["linea"]
+            marca = datos["datos_tarjeta"]["marca"]
+            linea = datos["datos_tarjeta"]["linea"]
             correo = datos["correo"]
 
             fecha_nacimiento = datetime.strptime(fecha_nacimiento_raw, "%d-%b-%Y").strftime("%d-%m-%Y")
@@ -313,7 +339,7 @@ def agente_motor():
 
             else:
                 print(f"Tipo de placa: {servicio}")
-            
+
             wait = WebDriverWait(driver, 3)
 
             boton_siguiente3 = wait.until(

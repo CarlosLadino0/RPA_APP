@@ -7,19 +7,16 @@ carpeta = "guia_fasecolda"
 ruta_json = "datos/datos_extraidos.json"
 
 def filtrar_excel(carpeta=carpeta, ruta_json=ruta_json):
-
     carpeta = "guia_fasecolda" 
     ruta_json = "datos/datos_extraidos.json"
 
     with open(ruta_json, "r", encoding="utf-8") as archivo_json:
         datos_json = json.load(archivo_json)
-
     archivo_excel = next((f for f in os.listdir(carpeta) if f.endswith('.xlsx')), None)
     if not archivo_excel:
         raise FileNotFoundError(f"No se encontró ningún archivo .xlsx en la carpeta {carpeta}")
 
     ruta_excel = os.path.join(carpeta, archivo_excel)
-
     df = pd.read_excel(ruta_excel, sheet_name="Codigos")
 
     columnas = ['Marca', 'Clase', 'Referencia1', 'Referencia3']
