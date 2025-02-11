@@ -1,5 +1,5 @@
 # Ignorar la carpeta del entorno virtual
-entorno_virtual/
+entorno_autos/
 
 # Ignorar otras carpetas o archivos innecesarios
 __pycache__/
