@@ -1,15 +1,15 @@
-import sys
-import os
-import json
-import subprocess
-import re
-from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox, 
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox,
                              QFileDialog, QVBoxLayout, QComboBox, QCheckBox, QScrollArea, QMainWindow)
 from PyQt5.QtGui import QMovie, QIntValidator, QRegExpValidator, QPixmap, QMovie
+from openpyxl.styles import Font, Alignment, Border, Side
 from PyQt5.QtCore import Qt, QRegExp, QTimer
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Font, Alignment, Border, Side
 from procesador import procesar_documentos
+import subprocess
+import json
+import sys
+import os
+import re
 
 class FormularioApp(QWidget):
     def __init__(self):

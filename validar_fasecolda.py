@@ -1,7 +1,7 @@
 import pandas as pd
+import json
 import os
 import re
-import json
 
 carpeta = "guia_fasecolda"
 ruta_json = "datos/datos_extraidos.json"

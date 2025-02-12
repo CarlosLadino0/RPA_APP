@@ -1,8 +1,8 @@
+from concurrent.futures import ThreadPoolExecutor
 import requests
 import json
 import os
 import re
-from concurrent.futures import ThreadPoolExecutor
 
 UPLOAD_FOLDER = 'datos/'
 OCR_API_URL = 'https://api.ocr.space/parse/image'

@@ -1,15 +1,15 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium import webdriver
 from datetime import datetime
+from pywinauto.keyboard import send_keys
 import unicodedata
+import random
 import time
 import json
 import os
-import random
-from pywinauto.keyboard import send_keys
 
 def normalizar_texto(texto):
     return ''.join(
