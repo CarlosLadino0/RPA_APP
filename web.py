@@ -6,10 +6,71 @@ from selenium import webdriver
 from datetime import datetime
 from pywinauto.keyboard import send_keys
 import unicodedata
+import requests
 import random
 import time
 import json
 import os
+
+API_KEY = "014c69e51a56b400e1d97e9c7a8d5f85"
+
+def resolver_captcha(driver):
+    print("Esperando a que el CAPTCHA se cargue...")
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "g-recaptcha"))
+    )
+
+    print("Resolviendo reCAPTCHA v2 con 2Captcha")
+    url_2captcha = "https://2captcha.com/in.php"
+    params = {
+        "key": API_KEY,
+        "method": "userrecaptcha",
+        "googlekey": "6LdJbMIqAAAAAF8OX8AxNy-TMJwPBwFL8Ty2ZEq6",
+        "pageurl": "https://crm.agentemotor.com/avs/login?tenant=corredoresasociados.co.agentemotor.com",
+        "json": 1
+    }
+    try:
+        response = requests.get(url_2captcha, params=params).json()
+    except Exception as e:
+        print(f"Error al conectar con 2Captcha: {e}")
+        return None
+    
+    if response["status"] != 1:
+        print("Error al solicitar la resolución del CAPTCHA", response)
+        return None
+
+    request_id = response["request"]
+    print(f"Captcha enviado, ID: {request_id}. Esperando respuesta...")
+
+    url_result = f"http://2captcha.com/res.php?key={API_KEY}&action=get&id={request_id}&json=1"
+    
+    for _ in  range(30):
+        time.sleep(5)
+        resultado = requests.get(url_result).json()
+        if resultado["status"] == 1:
+            print("Captcha resuelto exitosamente")
+            return resultado["request"]
+    
+    print("Error al resolver el CAPTCHA")
+    return None
+
+driver = webdriver.Chrome()
+driver.get("https://crm.agentemotor.com/avs/login?tenant=corredoresasociados.co.agentemotor.com")
+driver.maximize_window()
+
+WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "login"))).send_keys("practicante@correseguros.co")
+WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "password"))).send_keys("Carlos2024*")
+
+token_resuelto = resolver_captcha(driver)
+if token_resuelto:
+    driver.execute_script(f'document.getElementById("g-recaptcha-response").value="{token_resuelto}";')
+    driver.execute_script("document.getElementById('g-recaptcha-response').dispatchEvent(new Event('change'));")
+    time.sleep(2)
+
+    driver.find_element(By.XPATH, "//button[@type='submit']").click()
+    print("Inicio de sesión enviado con el CAPTCHA resuelto.")
+else:
+    print("No se pudo resolver el CAPTCHA.")
 
 def normalizar_texto(texto):
     return ''.join(
@@ -25,7 +86,6 @@ def borrar_y_escribir(campo, texto_a_escribir):
         campo.send_keys(texto_a_escribir)
 
 def agente_motor():
-    driver = webdriver.Chrome()
     try:
         ruta_json = "datos/datos_extraidos.json"
         if not os.path.exists(ruta_json):
@@ -35,9 +95,6 @@ def agente_motor():
 
         clase_vehiculo = normalizar_texto(datos["datos_tarjeta"]["clase_vehiculo"])
         servicio = normalizar_texto(datos["datos_tarjeta"]["servicio"])
-        url = "https://crm.agentemotor.com/avs/login?tenant=corredoresasociados.co.agentemotor.com"
-        driver.get(url)
-        driver.maximize_window()
         driver.set_page_load_timeout(20)
         time.sleep(5)
 
