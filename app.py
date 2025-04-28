@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox,
                              QFileDialog, QVBoxLayout, QComboBox, QCheckBox, QScrollArea, QMainWindow)
-from PyQt5.QtGui import QMovie, QIntValidator, QRegExpValidator, QPixmap, QMovie
+from PyQt5.QtGui import QMovie, QIntValidator, QRegExpValidator, QPixmap
 from openpyxl.styles import Font, Alignment, Border, Side
 from PyQt5.QtCore import Qt, QRegExp, QTimer
 from openpyxl import Workbook, load_workbook
